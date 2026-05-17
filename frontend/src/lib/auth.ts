@@ -1,3 +1,5 @@
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("cr_token");
@@ -16,7 +18,7 @@ export function isAuthenticated(): boolean {
 }
 
 export async function login(email: string, password: string) {
-  const res = await fetch("/api/auth/login", {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -33,7 +35,7 @@ export async function api(path: string, options: RequestInit = {}) {
     ...(options.headers as Record<string, string>),
   };
 
-  const res = await fetch(path, { ...options, headers });
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(data.error || `HTTP ${res.status}`);
