@@ -229,12 +229,12 @@ func scanCases(rows pgx.Rows) ([]model.ConfirmationCase, error) {
 }
 
 type InsertCaseInput struct {
-	IdempotencyKey   string           `json:"idempotency_key" binding:"required"`
+	IdempotencyKey   string           `json:"idempotency_key"`
 	CitaID           string           `json:"cita_id" binding:"required"`
 	ContactName      *string          `json:"contact_name"`
 	AppointmentAt    *time.Time       `json:"appointment_at"`
 	FlowSource       string           `json:"flow_source" binding:"required"`
-	AIReason         *string          `json:"ai_reason"`
+	AIReason         *string          `json:"reason"`
 	ChatContext      json.RawMessage  `json:"chat_context"`
 	SuggestedMessage *string          `json:"suggested_message"`
 	AccountID        *string          `json:"account_id"`
