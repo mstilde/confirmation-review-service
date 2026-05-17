@@ -38,10 +38,10 @@ func (h *CaseHandler) Create(c *gin.Context) {
 		return
 	}
 
-	if input.Kind == "actionable" {
-		if input.IdempotencyKey == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "idempotency_key es requerido para actionable"})
-			return
+	if input.IdempotencyKey == "" {
+		input.IdempotencyKey = input.CitaID + "_" + input.FlowSource
+		if input.Kind != "" {
+			input.IdempotencyKey += "_" + input.Kind
 		}
 	}
 
