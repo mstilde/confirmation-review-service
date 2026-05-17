@@ -1,0 +1,22 @@
+# .env files (contienen secrets)
+.env
+backend/.env
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+backend/tmp/
+
+# Node
+node_modules/
+frontend/.next/
+frontend/out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
