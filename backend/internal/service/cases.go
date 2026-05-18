@@ -34,6 +34,7 @@ func (s *CaseService) Create(input repository.InsertCaseInput) (*model.Confirmat
 	c := model.ConfirmationCase{
 		IdempotencyKey:   input.IdempotencyKey,
 		CitaID:           input.CitaID,
+		ChatID:           input.ChatID,
 		ContactName:      input.ContactName,
 		AppointmentAt:    input.AppointmentAt,
 		FlowSource:       input.FlowSource,
@@ -162,6 +163,7 @@ func (s *CaseService) dispatchToN8N(c *model.ConfirmationCase, action string) er
 		"action":           action,
 		"pending_id":       c.ID,
 		"cita_id":          c.CitaID,
+		"chat_id":          c.ChatID,
 		"contact_name":     c.ContactName,
 		"flow_source":      c.FlowSource,
 		"account_id":       c.AccountID,

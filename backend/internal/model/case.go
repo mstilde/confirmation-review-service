@@ -36,6 +36,7 @@ type ConfirmationCase struct {
 	ID               int64            `json:"id"`
 	IdempotencyKey   string           `json:"idempotency_key"`
 	CitaID           string           `json:"cita_id"`
+	ChatID           *string          `json:"chat_id"`
 	ContactName      *string          `json:"contact_name"`
 	AppointmentAt    *time.Time       `json:"appointment_at"`
 	FlowSource       string           `json:"flow_source"`

@@ -39,6 +39,8 @@ func RunMigrations() error {
 		`CREATE INDEX IF NOT EXISTS idx_cc_status ON confirmation_cases(status, kind, created_at DESC)`,
 		`CREATE INDEX IF NOT EXISTS idx_cc_expires ON confirmation_cases(expires_at) WHERE status = 'pending'`,
 
+		`ALTER TABLE confirmation_cases ADD COLUMN IF NOT EXISTS chat_id TEXT`,
+
 		`CREATE TABLE IF NOT EXISTS case_audit_log (
 			id BIGSERIAL PRIMARY KEY,
 			case_id BIGINT REFERENCES confirmation_cases(id) ON DELETE CASCADE,

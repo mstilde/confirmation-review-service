@@ -21,10 +21,11 @@ func CreateCase(c model.ConfirmationCase) (*model.ConfirmationCase, error) {
 	var row model.ConfirmationCase
 	err := Pool.QueryRow(ctx, `
 		INSERT INTO confirmation_cases
-			(idempotency_key, cita_id, contact_name, appointment_at, flow_source,
+			(idempotency_key, cita_id, chat_id, contact_name, appointment_at, flow_source,
 			 ai_reason, chat_context, suggested_message, account_id, kind, skip_reason, expires_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		ON CONFLICT (idempotency_key) DO UPDATE SET
+			chat_id = EXCLUDED.chat_id,
 			contact_name = EXCLUDED.contact_name,
 			appointment_at = EXCLUDED.appointment_at,
 			ai_reason = EXCLUDED.ai_reason,
@@ -36,12 +37,12 @@ func CreateCase(c model.ConfirmationCase) (*model.ConfirmationCase, error) {
 			resolved_at = NULL,
 			expires_at = EXCLUDED.expires_at,
 			created_at = NOW()
-		RETURNING id, idempotency_key, cita_id, contact_name, appointment_at, flow_source,
+		RETURNING id, idempotency_key, cita_id, chat_id, contact_name, appointment_at, flow_source,
 				  ai_reason, chat_context, suggested_message, account_id, status,
 				  resolved_by, created_at, resolved_at, expires_at, kind, skip_reason
-	`, c.IdempotencyKey, c.CitaID, c.ContactName, c.AppointmentAt, c.FlowSource,
+	`, c.IdempotencyKey, c.CitaID, c.ChatID, c.ContactName, c.AppointmentAt, c.FlowSource,
 		c.AIReason, chatJSON, c.SuggestedMessage, c.AccountID, c.Kind, c.SkipReason, c.ExpiresAt).
-		Scan(&row.ID, &row.IdempotencyKey, &row.CitaID, &row.ContactName, &row.AppointmentAt,
+		Scan(&row.ID, &row.IdempotencyKey, &row.CitaID, &row.ChatID, &row.ContactName, &row.AppointmentAt,
 			&row.FlowSource, &row.AIReason, &row.ChatContext, &row.SuggestedMessage,
 			&row.AccountID, &row.Status, &row.ResolvedBy, &row.CreatedAt, &row.ResolvedAt,
 			&row.ExpiresAt, &row.Kind, &row.SkipReason)
@@ -90,7 +91,7 @@ func ListInformative() ([]model.ConfirmationCase, error) {
 	ctx := context.Background()
 
 	rows, err := Pool.Query(ctx, `
-		SELECT id, idempotency_key, cita_id, contact_name, appointment_at, flow_source,
+		SELECT id, idempotency_key, cita_id, chat_id, contact_name, appointment_at, flow_source,
 			   ai_reason, chat_context, suggested_message, account_id, status,
 			   resolved_by, created_at, resolved_at, expires_at, kind, skip_reason
 		FROM confirmation_cases
@@ -111,13 +112,13 @@ func GetCaseByID(id int64) (*model.ConfirmationCase, error) {
 
 	var row model.ConfirmationCase
 	err := Pool.QueryRow(ctx, `
-		SELECT id, idempotency_key, cita_id, contact_name, appointment_at, flow_source,
+		SELECT id, idempotency_key, cita_id, chat_id, contact_name, appointment_at, flow_source,
 			   ai_reason, chat_context, suggested_message, account_id, status,
 			   resolved_by, created_at, resolved_at, expires_at, kind, skip_reason
 		FROM confirmation_cases
 		WHERE id = $1
 	`, id).
-		Scan(&row.ID, &row.IdempotencyKey, &row.CitaID, &row.ContactName, &row.AppointmentAt,
+		Scan(&row.ID, &row.IdempotencyKey, &row.CitaID, &row.ChatID, &row.ContactName, &row.AppointmentAt,
 			&row.FlowSource, &row.AIReason, &row.ChatContext, &row.SuggestedMessage,
 			&row.AccountID, &row.Status, &row.ResolvedBy, &row.CreatedAt, &row.ResolvedAt,
 			&row.ExpiresAt, &row.Kind, &row.SkipReason)
@@ -139,11 +140,11 @@ func UpdateCaseStatus(id int64, status model.CaseStatus, resolvedBy string) (*mo
 		UPDATE confirmation_cases
 		SET status = $2, resolved_at = NOW(), resolved_by = $3
 		WHERE id = $1 AND status = 'pending'
-		RETURNING id, idempotency_key, cita_id, contact_name, appointment_at, flow_source,
+		RETURNING id, idempotency_key, cita_id, chat_id, contact_name, appointment_at, flow_source,
 				  ai_reason, chat_context, suggested_message, account_id, status,
 				  resolved_by, created_at, resolved_at, expires_at, kind, skip_reason
 	`, id, status, resolvedBy).
-		Scan(&row.ID, &row.IdempotencyKey, &row.CitaID, &row.ContactName, &row.AppointmentAt,
+		Scan(&row.ID, &row.IdempotencyKey, &row.CitaID, &row.ChatID, &row.ContactName, &row.AppointmentAt,
 			&row.FlowSource, &row.AIReason, &row.ChatContext, &row.SuggestedMessage,
 			&row.AccountID, &row.Status, &row.ResolvedBy, &row.CreatedAt, &row.ResolvedAt,
 			&row.ExpiresAt, &row.Kind, &row.SkipReason)
@@ -216,7 +217,7 @@ func scanCases(rows pgx.Rows) ([]model.ConfirmationCase, error) {
 	var cases []model.ConfirmationCase
 	for rows.Next() {
 		var c model.ConfirmationCase
-		err := rows.Scan(&c.ID, &c.IdempotencyKey, &c.CitaID, &c.ContactName, &c.AppointmentAt,
+		err := rows.Scan(&c.ID, &c.IdempotencyKey, &c.CitaID, &c.ChatID, &c.ContactName, &c.AppointmentAt,
 			&c.FlowSource, &c.AIReason, &c.ChatContext, &c.SuggestedMessage,
 			&c.AccountID, &c.Status, &c.ResolvedBy, &c.CreatedAt, &c.ResolvedAt,
 			&c.ExpiresAt, &c.Kind, &c.SkipReason)
@@ -231,6 +232,7 @@ func scanCases(rows pgx.Rows) ([]model.ConfirmationCase, error) {
 type InsertCaseInput struct {
 	IdempotencyKey   string           `json:"idempotency_key"`
 	CitaID           string           `json:"cita_id" binding:"required"`
+	ChatID           *string          `json:"chat_id"`
 	ContactName      *string          `json:"contact_name"`
 	AppointmentAt    *time.Time       `json:"appointment_at"`
 	FlowSource       string           `json:"flow_source" binding:"required"`
