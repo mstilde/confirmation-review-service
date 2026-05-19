@@ -61,7 +61,7 @@ func ListPending(flowSource string) ([]model.ConfirmationCase, error) {
 
 	if flowSource == "" {
 		rows, err = Pool.Query(ctx, `
-			SELECT id, idempotency_key, cita_id, contact_name, appointment_at, flow_source,
+			SELECT id, idempotency_key, cita_id, chat_id, contact_name, appointment_at, flow_source,
 				   ai_reason, chat_context, suggested_message, account_id, status,
 				   resolved_by, created_at, resolved_at, expires_at, kind, skip_reason
 			FROM confirmation_cases
@@ -70,7 +70,7 @@ func ListPending(flowSource string) ([]model.ConfirmationCase, error) {
 		`)
 	} else {
 		rows, err = Pool.Query(ctx, `
-			SELECT id, idempotency_key, cita_id, contact_name, appointment_at, flow_source,
+			SELECT id, idempotency_key, cita_id, chat_id, contact_name, appointment_at, flow_source,
 				   ai_reason, chat_context, suggested_message, account_id, status,
 				   resolved_by, created_at, resolved_at, expires_at, kind, skip_reason
 			FROM confirmation_cases
